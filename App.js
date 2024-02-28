@@ -1,35 +1,44 @@
-import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Button,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { ActivityIndicator, Button, FlatList, StyleSheet, Text, View } from "react-native";
 
 export default function App() {
-  const [data, setData] = useState();
+  const [user, setUser] = useState();
   const [loading, setLoading] = useState(false);
+  const [customers, setCustomers] = useState([]);
+
+  useEffect(() => {
+    getAllCustomers();
+  }, []);
 
   function getAccount() {
     setLoading(true);
     fetch("https://private-anon-75f39ba77b-itodpbni.apiary-mock.com/account")
-      .then((res) => {
-        if (!res.ok) {
+      .then((response) => {
+        if (!response.ok) {
           throw new Error("Response was not ok!");
         } else {
-          return res.json();
+          return response.json();
         }
       })
-      .then((res) => {
-        console.log("res", res);
-        setData(res);
+      .then((response) => {
+        setUser(response);
       })
-      .catch((err) => {
-        console.error("err", err);
+      .catch((error) => {
+        console.error("error", error);
       })
       .finally(() => {
         setLoading(false);
+      });
+  }
+
+  function getAllCustomers() {
+    fetch("https://private-anon-91cc841bc2-itodpbni.apiary-mock.com/customers")
+      .then((response) => response.json())
+      .then((data) => {
+        setCustomers(data.customers);
+      })
+      .catch((error) => {
+        console.error("Error fetching customers:", error);
       });
   }
 
@@ -37,11 +46,21 @@ export default function App() {
     <View style={styles.container}>
       <Button disabled={loading} onPress={getAccount} title="Click" />
       {loading && <ActivityIndicator size="large" animating={loading} />}
-      <Text>Name: {data?.user.name}</Text>
-      <Text>Phone Number: {data?.user.phone}</Text>
-      <Text>
-        Balance: {data?.user.balance && data.user.balance}
-      </Text>
+      <Text>Name: {user?.user.name}</Text>
+      <Text>Phone Number: {user?.user.phone}</Text>
+      <Text>Balance: {user?.user.balance && user.user.balance}</Text>
+      <Text>List of Customers:</Text>
+      <FlatList
+        data={customers}
+        renderItem={({ item }) => (
+          <View>
+            <Text>Name: {item.name}</Text>
+            <Text>Amount: {item.amount}</Text>
+            <Text>Notes: {item.notes}</Text>
+          </View>
+        )}
+        keyExtractor={(item) => item.name}
+      />
     </View>
   );
 }
@@ -52,5 +71,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-  },
+    paddingTop: 50,
+  },
 });
