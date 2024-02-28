@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ActivityIndicator, Button, FlatList, StyleSheet, Text, View } from "react-native";
+import axios from "axios";
 
 export default function App() {
   const [user, setUser] = useState();
@@ -9,6 +10,12 @@ export default function App() {
   useEffect(() => {
     getAllCustomers();
   }, []);
+
+  const getAccountAxios = () => {
+    axios.get('https://private-anon-75f39ba77b-itodpbni.apiary-mock.com/account')
+    .then(response => console.log("Response", response.data))
+    .catch(error => console.error("Error", error))
+  }
 
   function getAccount() {
     setLoading(true);
@@ -45,6 +52,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Button disabled={loading} onPress={getAccount} title="Click" />
+      <Button disabled={loading} onPress={getAccountAxios} title="Click" />
       {loading && <ActivityIndicator size="large" animating={loading} />}
       <Text>Name: {user?.user.name}</Text>
       <Text>Phone Number: {user?.user.phone}</Text>
